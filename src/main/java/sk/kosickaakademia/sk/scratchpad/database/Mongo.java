@@ -14,13 +14,13 @@ public interface Mongo {
 
     public boolean insertTask(String title, String task, int priority, double price);
 
-    public void setTaskToDone(int id);
+    public boolean setTaskToDone();
 
     public List<Tasks> getAllTasks();
 
     public List<Tasks> getAllTasks(boolean done);
 
-    public List<Tasks> getAllTasksByPriority();
+    public List<Tasks> getAllTasksByPriority(int p);
 
     public List<Tasks> getAllTasksByName(String name);
 

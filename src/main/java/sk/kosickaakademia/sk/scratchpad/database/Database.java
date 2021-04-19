@@ -1,12 +1,15 @@
 package sk.kosickaakademia.sk.scratchpad.database;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import sk.kosickaakademia.sk.scratchpad.util.Tasks;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -52,29 +55,105 @@ private static final MongoClient mongoClient = new MongoClient();
     }
     //------------------------------------------------------------------------------------------------------------------
     @Override
-    public void setTaskToDone(int id) {
-
+    public boolean setTaskToDone() {
+        BasicDBObject query = new BasicDBObject();
+        query.put("done", false);
+        BasicDBObject doc = new BasicDBObject();
+        doc.put("done", true);
+        BasicDBObject updateObj = new BasicDBObject();
+        updateObj.put("$set", doc);
+        database.getCollection("Tasks").updateOne(query, updateObj);
+        return true;
     }
-
+    //------------------------------------------------------------------------------------------------------------------
     @Override
     public List<Tasks> getAllTasks() {
         database = mongoClient.getDatabase("TaskDB");
         collection = database.getCollection("Tasks");
+        List<Tasks> list = new ArrayList<>();
         FindIterable<Document> iterDoc = collection.find();
         for (Document document : iterDoc) {
-            System.out.println(document);
+            String title = document.getString("title");
+            int priority = document.getInteger("priority");
+            boolean done = document.getBoolean("done");
+            Date date = document.getDate("date");
+            ObjectId id = document.getObjectId("_id");
+            Tasks tasks;
+            if( document.containsKey("price") ) {
+                double price = document.getDouble("price");
+                tasks= new Tasks(title,date,priority,(int) price,done );
+            }else{
+                tasks = new Tasks(title,priority,done,date);
+            }
+            tasks.setId(id);
+            list.add(tasks);
         }
-        return null;
-    }
-
+        return list;
+        }
+    //------------------------------------------------------------------------------------------------------------------
     @Override
     public List<Tasks> getAllTasks(boolean done) {
-        return null;
+        database = mongoClient.getDatabase("TaskDB");
+        collection = database.getCollection("Tasks");
+        List<Tasks> list = new ArrayList<>();
+        FindIterable<Document> iterDoc = collection.find();
+        for (Document document : iterDoc) {
+            String title = document.getString("title");
+            int priority = document.getInteger("priority");
+            done = document.getBoolean("done");
+            Date date = document.getDate("date");
+            ObjectId id = document.getObjectId("_id");
+            Tasks tasks;
+            if (done==true) {
+                if (document.containsKey("price")) {
+                    double price = document.getDouble("price");
+                    tasks = new Tasks(title, date, priority, (int) price, done);
+                } else {
+                    tasks = new Tasks(title, priority, done, date);
+                }
+                tasks.setId(id);
+                list.add(tasks);
+            }else
+            if (done==false) {
+                if (document.containsKey("price")) {
+                    double price = document.getDouble("price");
+                    tasks = new Tasks(title, date, priority, (int) price, done);
+                } else {
+                    tasks = new Tasks(title, priority, done, date);
+                }
+                tasks.setId(id);
+                list.add(tasks);
+            }
+        }
+        return list;
     }
 
     @Override
-    public List<Tasks> getAllTasksByPriority() {
-        return null;
+    public List<Tasks> getAllTasksByPriority(int p) {
+        if(p<=0 || p>3) return null;
+        database = mongoClient.getDatabase("TaskDB");
+        collection = database.getCollection("Tasks");
+        List<Tasks> list = new ArrayList<>();
+        FindIterable<Document> iterDoc = collection.find();
+        for (Document document : iterDoc) {
+            String title = document.getString("title");
+            int priority = document.getInteger("priority");
+            boolean done = document.getBoolean("done");
+            Date date = document.getDate("date");
+            ObjectId id = document.getObjectId("_id");
+            Tasks tasks;
+            if (p==priority) {
+                if (document.containsKey("price")) {
+                    double price = document.getDouble("price");
+                    tasks = new Tasks(title, date, priority, (int) price, done);
+                } else {
+                    tasks = new Tasks(title, priority, done, date);
+                }
+                tasks.setId(id);
+                list.add(tasks);
+            }
+        }
+        return list;
     }
 
     @Override
