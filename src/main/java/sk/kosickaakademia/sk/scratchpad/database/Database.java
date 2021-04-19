@@ -1,12 +1,14 @@
 package sk.kosickaakademia.sk.scratchpad.database;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import sk.kosickaakademia.sk.scratchpad.util.Tasks;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -56,6 +58,12 @@ private static final MongoClient mongoClient = new MongoClient();
 
     @Override
     public List<Tasks> getAllTasks() {
+        database = mongoClient.getDatabase("TaskDB");
+        collection = database.getCollection("Tasks");
+        FindIterable<Document> iterDoc = collection.find();
+        for (Document document : iterDoc) {
+            System.out.println(document);
+        }
         return null;
     }
 
