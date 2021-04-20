@@ -127,10 +127,11 @@ private static final MongoClient mongoClient = new MongoClient();
         }
         return list;
     }
-
+    //------------------------------------------------------------------------------------------------------------------
     @Override
-    public List<Tasks> getAllTasksByPriority(int p) {
-        if(p<=0 || p>3) return null;
+    public List<Tasks> getAllTasksByPriority(int prior) {
+        if(prior<=0 || prior>3)
+            return null;
         database = mongoClient.getDatabase("TaskDB");
         collection = database.getCollection("Tasks");
         List<Tasks> list = new ArrayList<>();
@@ -142,7 +143,7 @@ private static final MongoClient mongoClient = new MongoClient();
             Date date = document.getDate("date");
             ObjectId id = document.getObjectId("_id");
             Tasks tasks;
-            if (p==priority) {
+            if (prior==priority) {
                 if (document.containsKey("price")) {
                     double price = document.getDouble("price");
                     tasks = new Tasks(title, date, priority, (int) price, done);
@@ -155,10 +156,34 @@ private static final MongoClient mongoClient = new MongoClient();
         }
         return list;
     }
-
+    //------------------------------------------------------------------------------------------------------------------
     @Override
     public List<Tasks> getAllTasksByName(String name) {
-        return null;
+        database = mongoClient.getDatabase("TaskDB");
+        collection = database.getCollection("Tasks");
+        List<Tasks> list = new ArrayList<>();
+        FindIterable<Document> iterDoc = collection.find();
+        for (Document document : iterDoc) {
+            String title = document.getString("title");
+            int priority = document.getInteger("priority");
+            boolean done = document.getBoolean("done");
+            Date date = document.getDate("date");
+            ObjectId id = document.getObjectId("_id");
+            Tasks tasks;
+            if (name==title) {
+                if (document.containsKey("price")) {
+                    double price = document.getDouble("price");
+                    tasks = new Tasks(title, date, priority, (int) price, done);
+                } else {
+                    tasks = new Tasks(title, priority, done, date);
+                }
+                tasks.setId(id);
+                list.add(tasks);
+            }else {
+                return null;
+            }
+        }
+        return list;
     }
 
     @Override
