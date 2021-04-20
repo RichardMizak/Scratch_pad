@@ -24,6 +24,7 @@ public class Tasks {
         this.price=price;
     }
 
+
     public void setId(ObjectId id) {
         this.id = id;
     }

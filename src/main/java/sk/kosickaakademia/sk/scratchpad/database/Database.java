@@ -7,6 +7,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import sk.kosickaakademia.sk.scratchpad.util.Tasks;
 
 import java.util.ArrayList;
@@ -15,7 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class Database implements Mongo {
+public class Database implements Mongo,MongoJSON{
 //dbname: TaskDB
 //collection: Tasks
 private static final MongoClient mongoClient = new MongoClient();
@@ -188,6 +191,34 @@ private static final MongoClient mongoClient = new MongoClient();
 
     @Override
     public void DeleteDoneTasks() {
+        collection.deleteMany(new Document().append("done", true));
+    }
 
+    @Override
+    public void insertTaskJSON(JSONObject task) {
+        collection=database.getCollection("Tasks");
+        JSONObject object = new JSONObject();
+        object.put("task",task);
+        docs=Document.parse(object.toJSONString());
+        collection.insertOne(docs);
+    }
+
+    @Override
+    public JSONObject getAllTasksJSON() {
+        for(Document doc : database.getCollection("Tasks").find()){
+            try {
+                JSONObject object = (JSONObject) new JSONParser().parse(doc.toJson());
+                String date = (String) object.get("date");
+                String title = (String) object.get("title");
+                String task = (String) object.get("task");
+                int priority = Integer.parseInt(String.valueOf(object.get("priority")));
+                double price = (double) object.get("price");
+                boolean done = (boolean) object.get("done");
+                object.put(new Tasks(title,date,price,priority,done));
+            }catch ( ParseException e){
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 }
