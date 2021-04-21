@@ -13,10 +13,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import sk.kosickaakademia.sk.scratchpad.util.Tasks;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 public class Database implements Mongo,MongoJSON{
@@ -204,7 +201,7 @@ private static final MongoClient mongoClient = new MongoClient();
         if (task.isEmpty() || task == null)
             return false;
         docs = new Document();
-        docs.append("date", date);
+        docs.append("date", date.toString());
         docs.append("title", task.get("title"));
         docs.append("task", task.get("task"));
         docs.append("priority", task.get("priority"));
