@@ -7,6 +7,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -191,34 +192,75 @@ private static final MongoClient mongoClient = new MongoClient();
 
     @Override
     public void DeleteDoneTasks() {
+        database = mongoClient.getDatabase("TaskDB");
+        collection=database.getCollection("Tasks");
         collection.deleteMany(new Document().append("done", true));
     }
 
     @Override
-    public void insertTaskJSON(JSONObject task) {
+    public boolean insertTaskJSON(JSONObject task) {
+        database = mongoClient.getDatabase("TaskDB");
         collection=database.getCollection("Tasks");
-        JSONObject object = new JSONObject();
-        object.put("task",task);
-        docs=Document.parse(object.toJSONString());
-        collection.insertOne(docs);
+        if (task.isEmpty() || task == null)
+            return false;
+        docs = new Document();
+        docs.append("date", date);
+        docs.append("title", task.get("title"));
+        docs.append("task", task.get("task"));
+        docs.append("priority", task.get("priority"));
+        docs.append("price", task.get("price"));
+        docs.append("done", false);
+        return true;
     }
 
     @Override
     public JSONObject getAllTasksJSON() {
-        for(Document doc : database.getCollection("Tasks").find()){
+        database = mongoClient.getDatabase("TaskDB");
+        JSONArray array = new JSONArray();
+        JSONObject json = new JSONObject();
+        for(Document docs : database.getCollection("Tasks").find()){
             try {
-                JSONObject object = (JSONObject) new JSONParser().parse(doc.toJson());
-                String date = (String) object.get("date");
-                String title = (String) object.get("title");
-                String task = (String) object.get("task");
-                int priority = Integer.parseInt(String.valueOf(object.get("priority")));
-                double price = (double) object.get("price");
-                boolean done = (boolean) object.get("done");
-                object.put(new Tasks(title,date,price,priority,done));
-            }catch ( ParseException e){
+                JSONObject object = (JSONObject) new JSONParser().parse(docs.toJson());
+                array.add(object);
+            }catch (ParseException e){
                 e.printStackTrace();
             }
         }
-        return null;
+        json.put("Tasks", array);
+        return json;
+    }
+
+    @Override
+    public JSONObject getAllTasksByPriorityJSON() {
+        database = mongoClient.getDatabase("TaskDB");
+        JSONArray array = new JSONArray();
+        JSONObject json = new JSONObject();
+        for(Document docs : database.getCollection("Tasks").find()){
+            try {
+                JSONObject object = (JSONObject) new JSONParser().parse(docs.toJson());
+                array.add(object);
+            }catch (ParseException e){
+                e.printStackTrace();
+            }
+        }
+        json.put("Tasks", array);
+        return json;
+    }
+
+    @Override
+    public JSONObject getAllTasksByNameJSON() {
+        database = mongoClient.getDatabase("TaskDB");
+        JSONArray array = new JSONArray();
+        JSONObject json = new JSONObject();
+        for(Document docs : database.getCollection("Tasks").find()){
+            try {
+                JSONObject object = (JSONObject) new JSONParser().parse(docs.toJson());
+                array.add(object);
+            }catch (ParseException e){
+                e.printStackTrace();
+            }
+        }
+        json.put("Tasks", array);
+        return json;
     }
 }

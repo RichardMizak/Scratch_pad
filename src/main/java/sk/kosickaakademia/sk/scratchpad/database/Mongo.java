@@ -20,7 +20,7 @@ public interface Mongo {
 
     public List<Tasks> getAllTasks(boolean done);
 
-    public List<Tasks> getAllTasksByPriority(int p);
+    public List<Tasks> getAllTasksByPriority(int prior);
 
     public List<Tasks> getAllTasksByName(String name);
 
