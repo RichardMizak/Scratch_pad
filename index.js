@@ -56,6 +56,18 @@ app.get('/task',(req,res)=> {
     }
     })
 })
+app.post('/task',(req,res)=> {
+MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    var dbo = db.db("TaskDB");
+    var myobj = {  };
+    dbo.collection("Tasks").insertOne(myobj, function(err, res) {
+      if (err) throw err;
+      console.log("document inserted");
+      db.close();
+    });
+  });
+});  
 app.listen(3000, ()=>{
     console.log('3000');
 })
