@@ -56,18 +56,24 @@ app.get('/task',(req,res)=> {
     }
     })
 })
-app.post('/task',(req,res)=> {
-MongoClient.connect(url, function(err, db) {
-    if (err) throw err;
-    var dbo = db.db("TaskDB");
-    var myobj = {  };
-    dbo.collection("Tasks").insertOne(myobj, function(err, res) {
-      if (err) throw err;
-      console.log("document inserted");
-      db.close();
-    });
-  });
-});  
+app.post('/inserttask',(req,res)=> {
+    const data= req.body;
+    const name=data.name;
+    const priority=data.priority;
+    let price;
+    if (data.price) {
+        price=data.price;
+    }
+    var newTask = {name: name, priority: priority, price: price, done: 'false', date: currentDate};
+        const db=client.db(databaseName);
+        db.collection("Tasks").insertOne(newTask, function(err, res) {
+            if(err){
+                return console.log('Unable to add new task');
+            } else{
+                console.log("1 document inserted");
+            } 
+        })
+    })
 app.listen(3000, ()=>{
     console.log('3000');
 })
