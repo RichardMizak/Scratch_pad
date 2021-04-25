@@ -18,9 +18,20 @@ app.get('/task',(req,res)=> {
         let filter='{}';
         if (req.query.done=='true') {
             filter={done:true};
-        }else{
+        }else 
+            if(req.query.done=='false'){
             filter={done:true}; 
-        }
+        }else 
+            if(req.query.priority=='1'){
+            filter={priority:1};
+        }else
+            if (req.query.priority=='2'){
+            filter={priority:2}; 
+        }else
+            if (req.query.priority=='3'){
+            filter={priority:3}; 
+        }else
+        res.send('wrong priority')
     
         const db=client.db(name);
         const result = db.collection('Tasks').find().toArray((error,result)=>{
@@ -31,31 +42,7 @@ app.get('/task',(req,res)=> {
     }
     })
 })
-app.get('/task',(req,res)=> {
-    MongoClient.connect(URL,(error, client)=>{
-    if(error){
-        return console.log('Unable to connect to TaskDB');
-    }else{
-        let filter='{}';
-            if (req.query.priority=='1'){
-            filter={priority:1};
-        }else
-            if (req.query.priority=='2'){
-            filter={priority:2}; 
-        }else
-            if (req.query.priority=='3'){
-            filter={priority:3}; 
-        }else
-        res.send('wrong priority')
-        const db=client.db(name);
-        const result = db.collection('Tasks').find().toArray((error,result)=>{
-            if (error) throw error;
-            console.log(result);    
-            res.send(result);
-        })
-    }
-    })
-})
+
 app.post('/inserttask',(req,res)=> {
     const data= req.body;
     const name=data.name;
