@@ -61,17 +61,15 @@ app.post('/inserttask',(req,res)=> {
             } 
         })
     })
- app.updateOne('/updatetask',(req,res)=> {
-    MongoClient.connect(url, function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("mydb");
-      
-        dbo.collection("customers").updateOne(myquery, newvalues, function(err, res) {
-          if (err) throw err;
-          console.log("1 document updated");
-          db.close();
-        });
-      });
+  app.patch('/updatetask', (req, res) => {
+        MongoClient.connect(connection, (error, client) => {
+            if(error) return console.log("Invalid connection")
+            const db = client.db(database)
+            db.collection('notes').update({'title':req.body.title}, {$set: {'done':true}}, (err, result) => {
+                if(err) throw err
+                res.send({"Info":"Update succesfull"})
+            })
+        })
     })
 
 app.listen(3000, ()=>{
