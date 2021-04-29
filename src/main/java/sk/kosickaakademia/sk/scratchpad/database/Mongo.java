@@ -12,7 +12,7 @@ public interface Mongo {
      * @version 1.0
      */
 
-    public boolean insertTask(String title, String task, int priority, double price);
+    public boolean insertTask(String task, int priority, double price);
 
     public boolean setTaskToDone();
 
