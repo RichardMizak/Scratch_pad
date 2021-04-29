@@ -1,57 +1,68 @@
-const express=require('express');
-const mongodb=require('mongodb');
-const URL='mongodb://localhost:27017';
-const name='TaskDB';
-const mongoClient=mongodb.MongoClient;
-const app=express();
-app.get('',(req,res)=> {res.send("Hello")})
+const express = require('express');
+const mongodb = require('mongodb');
 
-app.get('/about',(req,res)=> {res.send("Node.js Server")})
+const connectionURL = 'mongodb://localhost:27017';
+const databaseName = 'TaskDB';
 
-app.get('/author',(req,res)=> {res.send({"firstname":"Richard"})})
+const app = express();
+const MongoClient = mongodb.MongoClient;
 
-app.get('/task',(req,res)=> {
-    mongoClient.connect(URL,(error, client)=>{
-    if(error){
-        return console.log('Unable to connect to TaskDB');
-    }else{
-        let filter='{}';
-        if (req.query.done=='true') {
-            filter={done:true};
-        }else 
-            if(req.query.done=='false'){
-            filter={done:true}; 
-        }else 
-            if(req.query.priority=='1'){
-            filter={priority:1};
-        }else
-            if (req.query.priority=='2'){
-            filter={priority:2}; 
-        }else
-            if (req.query.priority=='3'){
-            filter={priority:3}; 
-        }else
-        res.send('wrong priority')
-    
-        const db=client.db(name);
-        const result = db.collection('Tasks').find().toArray((error,result)=>{
-            if (error) throw error;
-            console.log(result);    
-            res.send(result);
+app.use(
+    express.urlencoded({
+        extended: true
+    })
+);
+
+app.use(express.json());
+
+app.get('', (req, res)=>{
+    res.send('Hello I am your NodeJS server');
+})
+
+app.get('/about', (req, res)=>{
+    res.send('<h1>Server: task manager</h1>');
+})
+
+
+app.get('/task/show', (req, res)=>{
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    MongoClient.connect(connectionURL, (error, client)=>{
+        if(error){
+            return console.log('Unable to connect to database');
+        }else{
+            let filter='';
+            if(req.query.done){
+                if(req.query.done=='true'){
+                    filter={done:true};
+                }else{
+                    filter={done:false};
+                }
+            }else if(req.query.priority){
+                filter.priority=parseInt(req.query.priority);
+            }
+            console.log(filter);
+            const db=client.db(databaseName);
+
+            db.collection('Tasks').find(filter).toArray((err, result)=>{
+                if(err) throw err;
+                res.send(result);
         })
-    }
+        } 
     })
 })
 
-app.post('/inserttask',(req,res)=> {
-    const data= req.body;
-    const name=data.name;
-    const priority=data.priority;
-    let price;
-    if (data.price) {
-        price=data.price;
-    }
-    var newTask = {name: name, priority: priority, price: price, done: 'false', date: currentDate};
+app.post('/task/new', (req, res)=>{
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    MongoClient.connect(connectionURL, (error, client)=>{
+        const data = (req.body);
+        const name = data.name;
+        const priority = data.priority;
+        let currentDate = new Date();
+        let price='undefined';
+        if(data.price){
+            price = data.price;
+        }
+        var newTask = {name: name, priority: priority, price: price, done: 'false', date: currentDate};
         const db=client.db(databaseName);
         db.collection("Tasks").insertOne(newTask, function(err, res) {
             if(err){
@@ -61,17 +72,33 @@ app.post('/inserttask',(req,res)=> {
             } 
         })
     })
-  app.patch('/updatetask', (req, res) => {
-        MongoClient.connect(connection, (error, client) => {
-            if(error) return console.log("Invalid connection")
-            const db = client.db(database)
-            db.collection('notes').update({'title':req.body.title}, {$set: {'done':true}}, (err, result) => {
-                if(err) throw err
-                res.send({"Info":"Update succesfull"})
-            })
-        })
-    })
-
-app.listen(3000, ()=>{
-    console.log('3000');
 })
+app.put('/task/done', (req,res)=>{
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const id = req.query._id;
+    if(!id){
+        res.status(400).send({"error":"missing _id parameter"});
+    }
+    const filter={}
+    var newValue = {$set:{done: true}};
+    filter._id = new mongodb.ObjectID(id);
+
+    MongoClient.connect(connectionURL, (error, client)=>{
+        if(error){
+            res.status(400).send({"error":"Unable to save data to database"});
+            return console.log("Unable to connect to database");
+        }
+        const db=client.db(databaseName);
+        db.collection("Tasks").updateOne(filter, newValue),(error,res)=>{
+            if(error){
+                res.status(400).send({"error":"Unable to update task"});
+            }else{
+                res.status(200).send({"result":"Task has been updated"});
+            }
+        }
+    })
+})
+    
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+}) 
