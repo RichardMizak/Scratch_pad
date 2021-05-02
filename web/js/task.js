@@ -15,6 +15,9 @@ $(()=>{
                     text = text +  "<b> Priority </b>: " + priority;
                     if(price >= 0){
                         text = text + "<b> Price: </b>" + price+"€";
+                    } 
+                    if(done=false){
+                        text = text + "<button onClick=\'complete(\""+id+"\")'\ id='cbtn'>Complete</button>";
                     }
                     text = text + "<b> Done: </b>" + done;
                     $("#mainContainer").append("<div>" +"<div class='center'>" + text + "</div>" + "</div> <br>");
